@@ -24,7 +24,10 @@ const envSchema = z.object({
   MONGO_URI: z.string().optional(),
 
   // Supabase
-  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_URL: z.preprocess(
+    (val) => val === '' ? undefined : val,
+    z.string().url().optional()
+  ),
   SUPABASE_ANON_KEY: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 
@@ -49,7 +52,10 @@ const envSchema = z.object({
 
   // SendGrid (optional)
   SENDGRID_API_KEY: z.string().optional(),
-  SENDGRID_FROM_EMAIL: z.string().email().optional(),
+  SENDGRID_FROM_EMAIL: z.preprocess(
+    (val) => val === '' ? undefined : val,
+    z.string().email().optional()
+  ),
 
   // Sentry (optional)
   SENTRY_DSN: z.string().optional(),

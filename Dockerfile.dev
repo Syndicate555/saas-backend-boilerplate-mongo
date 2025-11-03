@@ -1,5 +1,7 @@
 # Development Dockerfile with hot reload
-FROM node:20-alpine
+# Using specific version to ensure security patches
+# Node.js 20.19.5 with Alpine 3.22
+FROM node:20.19-alpine3.22
 
 WORKDIR /app
 

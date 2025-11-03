@@ -64,7 +64,9 @@ export function createServer(): Express {
         if (!origin) return callback(null, true);
 
         // Check if origin is allowed
-        const allowedOrigins = env.FRONTEND_URL.split(',').map(url => url.trim());
+        const allowedOrigins = env.FRONTEND_URL.split(',').map((url) =>
+          url.trim()
+        );
         if (allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
@@ -79,7 +81,11 @@ export function createServer(): Express {
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
-      exposedHeaders: ['X-Request-Id', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
+      exposedHeaders: [
+        'X-Request-Id',
+        'X-RateLimit-Limit',
+        'X-RateLimit-Remaining',
+      ],
     })
   );
 
@@ -115,18 +121,20 @@ export function createServer(): Express {
         timestamp: new Date().toISOString(),
         services: {
           database: database.isConnected(),
-          redis: features.redis ? !!getRedisClient() : false,
-          s3: features.s3 ? true : false,
-          stripe: features.stripe ? true : false,
-          sendgrid: features.sendgrid ? true : false,
+          // Only include services in health check if they're enabled
+          ...(features.redis && { redis: !!getRedisClient() }),
+          ...(features.s3 && { s3: true }),
+          ...(features.stripe && { stripe: true }),
+          ...(features.sendgrid && { sendgrid: true }),
         },
         ...(version && { version }),
         uptime: process.uptime(),
       };
 
-      // Check if any service is down
-      const servicesDown = Object.values(health.services).some(
-        service => service === false
+      // Check if any REQUIRED service is down (database is always required)
+      // Optional services are only checked if they're enabled (included in the services object)
+      const servicesDown = Object.entries(health.services).some(
+        ([_key, value]) => value === false
       );
 
       if (servicesDown) {
@@ -213,7 +221,7 @@ export async function startServer(app: Express, port?: number): Promise<void> {
       logger.info(`🚀 Server running on port ${serverPort}`);
       logger.info(`📝 Environment: ${env.NODE_ENV}`);
       logger.info(`🗄️  Database: ${env.DATABASE_TYPE}`);
-      
+
       if (features.redis) logger.info('💾 Redis: Enabled');
       if (features.s3) logger.info('☁️  S3: Enabled');
       if (features.stripe) logger.info('💳 Stripe: Enabled');

@@ -118,7 +118,7 @@ const auditLogSchema = new Schema<IAuditLog>(
     userAgent: String,
     requestId: {
       type: String,
-      index: true,
+      // Note: Index is defined below in schema.index() to avoid duplicate index warning
     },
     duration: Number, // in milliseconds
     statusCode: Number,
@@ -149,11 +149,12 @@ auditLogSchema.index({ action: 1, createdAt: -1 });
 auditLogSchema.index({ requestId: 1 });
 
 // TTL index to automatically delete old logs after 90 days
+// Note: MongoDB doesn't support $ne in partial filter expressions, so we can't exclude critical logs here
+// Instead, use the cleanup() static method to manually clean old logs while preserving critical ones
 auditLogSchema.index(
   { createdAt: 1 },
-  { 
+  {
     expireAfterSeconds: 90 * 24 * 60 * 60, // 90 days
-    partialFilterExpression: { action: { $ne: 'critical' } } // Keep critical logs forever
   }
 );
 
@@ -374,4 +375,5 @@ auditLogSchema.statics['cleanup'] = async function (
   return result.deletedCount || 0;
 };
 
-export const AuditLog = mongoose.model<IAuditLog, IAuditLogModel>('AuditLog', auditLogSchema);
+// Prevent model overwrite error in development with hot reload
+export const AuditLog = (mongoose.models.AuditLog || mongoose.model<IAuditLog, IAuditLogModel>('AuditLog', auditLogSchema)) as IAuditLogModel;

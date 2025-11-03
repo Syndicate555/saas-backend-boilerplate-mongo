@@ -8,6 +8,7 @@ import { Request, Response } from 'express';
 
 /**
  * Create rate limiter with Redis store if available, otherwise use memory store
+ * NOTE: Redis store creation is deferred until first request to ensure Redis is connected
  */
 function createRateLimiter(options: {
   windowMs: number;
@@ -18,8 +19,6 @@ function createRateLimiter(options: {
   keyGenerator?: (req: Request) => string;
   name?: string;
 }) {
-  const redisClient = getRedisClient();
-
   const baseOptions = {
     windowMs: options.windowMs,
     max: options.max,
@@ -39,16 +38,25 @@ function createRateLimiter(options: {
     },
   };
 
-  // Use Redis store if available
-  if (features.redis && redisClient) {
-    return rateLimit({
-      ...baseOptions,
-      store: new RedisStore({
-        // @ts-expect-error - RedisStore expects sendCommand but works with client
-        sendCommand: (...args: string[]) => redisClient.sendCommand(args),
-        prefix: `rate-limit:${options.name || 'general'}:`,
-      }),
-    });
+  // Try to use Redis store if available
+  // This will be attempted on each rate limiter creation, but will fall back to memory if Redis isn't ready
+  if (features.redis) {
+    const redisClient = getRedisClient();
+    if (redisClient && redisClient.status === 'ready') {
+      try {
+        return rateLimit({
+          ...baseOptions,
+          store: new RedisStore({
+            // @ts-expect-error - RedisStore type mismatch with ioredis
+            sendCommand: (...args: string[]) => redisClient.call(...args),
+            prefix: `rate-limit:${options.name || 'general'}:`,
+          }),
+        });
+      } catch (error) {
+        // If Redis store creation fails, fall back to memory store
+        console.warn(`Failed to create Redis store for rate limiter ${options.name}, using memory store:`, error);
+      }
+    }
   }
 
   // Fallback to memory store
@@ -184,16 +192,23 @@ export function subscriptionBasedLimiter(
     },
   };
 
-  // Use Redis store if available
-  if (features.redis && redisClient) {
-    return rateLimit({
-      ...baseOptions,
-      store: new RedisStore({
-        // @ts-expect-error - RedisStore expects sendCommand but works with client
-        sendCommand: (...args: string[]) => redisClient.sendCommand(args),
-        prefix: 'rate-limit:subscription:',
-      }),
-    });
+  // Try to use Redis store if available
+  if (features.redis) {
+    const redisClient = getRedisClient();
+    if (redisClient && redisClient.status === 'ready') {
+      try {
+        return rateLimit({
+          ...baseOptions,
+          store: new RedisStore({
+            // @ts-expect-error - RedisStore type mismatch with ioredis
+            sendCommand: (...args: string[]) => redisClient.call(...args),
+            prefix: 'rate-limit:subscription:',
+          }),
+        });
+      } catch (error) {
+        console.warn('Failed to create Redis store for subscription rate limiter, using memory store:', error);
+      }
+    }
   }
 
   // Fallback to memory store

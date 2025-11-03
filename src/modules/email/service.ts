@@ -1,7 +1,12 @@
 import sgMail from '@sendgrid/mail';
-import { env } from '../../core/config/env';
+import { env, features } from '../../core/config/env';
+import { logger } from '../../core/config/logger';
 
-sgMail.setApiKey(env.SENDGRID_API_KEY || '');
+// Only initialize SendGrid if configured
+if (features.sendgrid && env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(env.SENDGRID_API_KEY);
+  logger.info('SendGrid initialized');
+}
 
 interface EmailPayload {
   to: string;
@@ -11,9 +16,14 @@ interface EmailPayload {
 }
 
 export async function sendEmail({ to, subject, html, text }: EmailPayload) {
+  if (!features.sendgrid) {
+    logger.warn('SendGrid not configured, skipping email send', { to, subject });
+    return;
+  }
+
   await sgMail.send({
     to,
-    from: 'noreply@yourdomain.com',
+    from: env.SENDGRID_FROM_EMAIL!,
     subject,
     html,
     text,

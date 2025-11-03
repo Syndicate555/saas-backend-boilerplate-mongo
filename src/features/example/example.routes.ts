@@ -15,6 +15,9 @@ import {
   requireRole,
 } from '../../modules/auth/middleware';
 import { strictLimiter } from '../../core/middleware/rateLimiter';
+import { asyncHandler } from '../../core/middleware/asyncHandler';
+import { exampleService } from './example.service';
+import { paginated } from '../../core/utils/apiResponse';
 
 const router = Router();
 
@@ -143,8 +146,3 @@ router.get(
 );
 
 export default router;
-
-// Import at the bottom to avoid circular dependency
-import { asyncHandler } from '../../core/middleware/asyncHandler';
-import { exampleService } from './example.service';
-import { paginated } from '../../core/utils/apiResponse';

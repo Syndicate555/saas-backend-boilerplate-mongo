@@ -47,7 +47,10 @@ export interface IUser extends Document {
 
   // Instance methods
   updateLastLogin(): Promise<void>;
-  updateSubscription(subscription: SubscriptionStatus, stripeCustomerId?: string): Promise<void>;
+  updateSubscription(
+    subscription: SubscriptionStatus,
+    stripeCustomerId?: string
+  ): Promise<void>;
   hasPermission(permission: string): boolean;
   softDelete(): Promise<void>;
   restore(): Promise<void>;
@@ -158,39 +161,43 @@ userSchema.virtual('isAdmin').get(function (this: IUser) {
 /**
  * Find user by Clerk ID
  */
-userSchema.statics['findByClerkId'] = async function (clerkId: string): Promise<IUser | null> {
+userSchema.statics['findByClerkId'] = async function (
+  clerkId: string
+): Promise<IUser | null> {
   return this.findOne({ clerkId, deletedAt: null });
 };
 
 /**
  * Find user by email
  */
-userSchema.statics['findByEmail'] = async function (email: string): Promise<IUser | null> {
+userSchema.statics['findByEmail'] = async function (
+  email: string
+): Promise<IUser | null> {
   return this.findOne({
     email: email.toLowerCase(),
-    deletedAt: null
+    deletedAt: null,
   });
 };
 
 /**
  * Find user by Stripe customer ID
  */
-userSchema.statics['findByStripeCustomerId'] = async function (stripeCustomerId: string): Promise<IUser | null> {
+userSchema.statics['findByStripeCustomerId'] = async function (
+  stripeCustomerId: string
+): Promise<IUser | null> {
   return this.findOne({ stripeCustomerId, deletedAt: null });
 };
 
 /**
  * Find or create user from Clerk data
  */
-userSchema.statics['findOrCreateFromClerk'] = async function (
-  clerkData: {
-    clerkId: string;
-    email: string;
-    name?: string;
-    emailVerified?: boolean;
-    profileImage?: string;
-  }
-): Promise<IUser> {
+userSchema.statics['findOrCreateFromClerk'] = async function (clerkData: {
+  clerkId: string;
+  email: string;
+  name?: string;
+  emailVerified?: boolean;
+  profileImage?: string;
+}): Promise<IUser> {
   let user = await (this as any).findByClerkId(clerkData.clerkId);
 
   if (!user) {
@@ -218,7 +225,9 @@ userSchema.statics['findOrCreateFromClerk'] = async function (
 /**
  * Soft delete user
  */
-userSchema.statics['softDelete'] = async function (userId: string): Promise<boolean> {
+userSchema.statics['softDelete'] = async function (
+  userId: string
+): Promise<boolean> {
   const result = await this.updateOne(
     { _id: userId, deletedAt: null },
     { deletedAt: new Date() }
@@ -229,7 +238,9 @@ userSchema.statics['softDelete'] = async function (userId: string): Promise<bool
 /**
  * Restore soft deleted user
  */
-userSchema.statics['restore'] = async function (userId: string): Promise<boolean> {
+userSchema.statics['restore'] = async function (
+  userId: string
+): Promise<boolean> {
   const result = await this.updateOne(
     { _id: userId, deletedAt: { $ne: null } },
     { deletedAt: null }
@@ -241,25 +252,20 @@ userSchema.statics['restore'] = async function (userId: string): Promise<boolean
  * Get user statistics
  */
 userSchema.statics['getStats'] = async function (): Promise<any> {
-  const [
-    totalUsers,
-    activeUsers,
-    deletedUsers,
-    subscriptionStats,
-    roleStats,
-  ] = await Promise.all([
-    this.countDocuments({ deletedAt: null }),
-    this.countDocuments({ deletedAt: null, emailVerified: true }),
-    this.countDocuments({ deletedAt: { $ne: null } }),
-    this.aggregate([
-      { $match: { deletedAt: null } },
-      { $group: { _id: '$subscription', count: { $sum: 1 } } },
-    ]),
-    this.aggregate([
-      { $match: { deletedAt: null } },
-      { $group: { _id: '$role', count: { $sum: 1 } } },
-    ]),
-  ]);
+  const [totalUsers, activeUsers, deletedUsers, subscriptionStats, roleStats] =
+    await Promise.all([
+      this.countDocuments({ deletedAt: null }),
+      this.countDocuments({ deletedAt: null, emailVerified: true }),
+      this.countDocuments({ deletedAt: { $ne: null } }),
+      this.aggregate([
+        { $match: { deletedAt: null } },
+        { $group: { _id: '$subscription', count: { $sum: 1 } } },
+      ]),
+      this.aggregate([
+        { $match: { deletedAt: null } },
+        { $group: { _id: '$role', count: { $sum: 1 } } },
+      ]),
+    ]);
 
   return {
     total: totalUsers,
@@ -355,4 +361,6 @@ userSchema.pre(/^find/, function (this: any) {
   }
 });
 
-export const User = mongoose.model<IUser, IUserModel>('User', userSchema);
+// Prevent model overwrite error in development with hot reload
+export const User = (mongoose.models['User'] ||
+  mongoose.model<IUser, IUserModel>('User', userSchema)) as IUserModel;

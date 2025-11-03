@@ -311,4 +311,5 @@ exampleSchema.methods = {
   },
 };
 
-export const Example = mongoose.model<IExample, IExampleModel>('Example', exampleSchema);
+// Prevent model overwrite error in development with hot reload
+export const Example = (mongoose.models.Example || mongoose.model<IExample, IExampleModel>('Example', exampleSchema)) as IExampleModel;

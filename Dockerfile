@@ -1,5 +1,7 @@
 # Build stage
-FROM node:20-alpine AS builder
+# Using specific version to ensure security patches
+# Node.js 20.19.5 with Alpine 3.22
+FROM node:20.19-alpine3.22 AS builder
 
 WORKDIR /app
 
@@ -16,7 +18,8 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+# Using specific version to ensure security patches
+FROM node:20.19-alpine3.22
 
 WORKDIR /app
 
