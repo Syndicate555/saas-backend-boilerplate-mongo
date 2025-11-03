@@ -1,4 +1,3 @@
-// TypeScript Audit Status: FIXED - All type errors resolved
 import mongoose, { Document, Schema, Model } from 'mongoose';
 import { AuditAction } from '../../../core/types';
 

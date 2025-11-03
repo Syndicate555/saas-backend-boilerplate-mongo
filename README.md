@@ -226,22 +226,33 @@ src/
 ## Available Scripts
 
 ```bash
-npm run dev              # Start development server with hot reload
-npm run build            # Build TypeScript to JavaScript
-npm start                # Start production server
-npm test                 # Run tests with Jest
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-npm run lint             # Run ESLint
-npm run lint:fix         # Run ESLint and auto-fix issues
-npm run format           # Format code with Prettier
-npm run health-check     # Check if the API is running
-npm run seed             # Seed database with sample data
-npm run migrate          # Run database migrations
-npm run docker:up        # Start Docker Compose services
-npm run docker:down      # Stop Docker Compose services
-npm run docker:build     # Build Docker images
+npm run dev        # Start development server with hot reload
+npm run build      # Build TypeScript to JavaScript
+npm start          # Start production server
+npm run lint       # Run ESLint
+npm run lint:fix   # Run ESLint and auto-fix issues
+npm test           # Run tests with Jest
 ```
+
+**Other useful commands** (run directly):
+```bash
+# Testing
+npx jest --watch              # Run tests in watch mode
+npx jest --coverage           # Run tests with coverage
+
+# Database
+npx tsx scripts/seed.ts       # Seed database with sample data
+
+# Docker
+docker-compose up             # Start services
+docker-compose down           # Stop services
+docker-compose up --build     # Rebuild and start
+
+# Health check
+curl http://localhost:3000/health
+```
+
+See [SCRIPTS_SIMPLIFICATION.md](SCRIPTS_SIMPLIFICATION.md) for details on script changes.
 
 ## Adding a New Feature
 
