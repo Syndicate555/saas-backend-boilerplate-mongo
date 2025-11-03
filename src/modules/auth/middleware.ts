@@ -67,21 +67,21 @@ export async function requireAuth(
 
   try {
     const token = extractToken(req);
-    
+
     if (!token) {
       throw new AuthError('No authentication token provided');
     }
 
     // Verify token with Clerk
     const session = await verifyClerkToken(token);
-    
+
     if (!session || !session.sub) {
       throw new AuthError('Invalid authentication token');
     }
 
     // Get user from Clerk
     const clerkUser = await clerkClient.users.getUser(session.sub);
-    
+
     if (!clerkUser) {
       throw new AuthError('User not found');
     }
@@ -95,8 +95,11 @@ export async function requireAuth(
       user = await UserModel.create({
         clerkId: session.sub,
         email: clerkUser.emailAddresses[0]?.emailAddress,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || undefined,
-        emailVerified: clerkUser.emailAddresses[0]?.verification?.status === 'verified',
+        name:
+          `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
+          undefined,
+        emailVerified:
+          clerkUser.emailAddresses[0]?.verification?.status === 'verified',
         profileImage: clerkUser.imageUrl,
         lastLoginAt: new Date(),
       });
@@ -173,7 +176,11 @@ export async function optionalAuth(
  * AUDIT: Added mock authentication for development when Clerk is not configured
  */
 export function requireRole(...roles: string[]) {
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     // Handle missing Clerk credentials gracefully
     if (!features.auth) {
       if (env.NODE_ENV === 'development') {
@@ -217,7 +224,11 @@ export function requireRole(...roles: string[]) {
  * AUDIT: Added mock authentication for development when Clerk is not configured
  */
 export function requirePermission(...permissions: string[]) {
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     // Handle missing Clerk credentials gracefully
     if (!features.auth) {
       if (env.NODE_ENV === 'development') {
@@ -247,7 +258,7 @@ export function requirePermission(...permissions: string[]) {
       }
 
       // Check permissions based on role
-      const hasPermission = permissions.some(permission => {
+      const hasPermission = permissions.some((permission) => {
         return checkRolePermission(req.user!.role, permission);
       });
 
@@ -291,7 +302,7 @@ function checkRolePermission(role: string, permission: string): boolean {
   };
 
   const permissions = rolePermissions[role] || [];
-  
+
   // Check for wildcard permission
   if (permissions.includes('*')) {
     return true;
@@ -305,7 +316,10 @@ function checkRolePermission(role: string, permission: string): boolean {
   // Check for partial wildcard matches (e.g., 'users:*')
   const permissionParts = permission.split(':');
   for (let i = permissionParts.length; i > 0; i--) {
-    const wildcardPermission = permissionParts.slice(0, i - 1).concat('*').join(':');
+    const wildcardPermission = permissionParts
+      .slice(0, i - 1)
+      .concat('*')
+      .join(':');
     if (permissions.includes(wildcardPermission)) {
       return true;
     }
@@ -319,10 +333,12 @@ function checkRolePermission(role: string, permission: string): boolean {
  * AUDIT: Prefixed unused res parameter with underscore
  * AUDIT: Added mock authentication for development when Clerk is not configured
  */
-export function requireOwnership(
-  resourceUserIdPath: string = 'userId'
-) {
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+export function requireOwnership(resourceUserIdPath: string = 'userId') {
+  return async (
+    req: Request,
+    _res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     // Handle missing Clerk credentials gracefully
     if (!features.auth) {
       if (env.NODE_ENV === 'development') {
@@ -376,7 +392,9 @@ export function requireOwnership(
 /**
  * Extract user ID from token without full authentication
  */
-export async function getUserIdFromToken(token: string): Promise<string | null> {
+export async function getUserIdFromToken(
+  token: string
+): Promise<string | null> {
   try {
     const session = await verifyClerkToken(token);
     return session?.sub || null;
@@ -391,7 +409,7 @@ export async function getUserIdFromToken(token: string): Promise<string | null> 
 export async function refreshUserData(clerkId: string): Promise<void> {
   try {
     const clerkUser = await clerkClient.users.getUser(clerkId);
-    
+
     if (!clerkUser) {
       logger.warn(`Clerk user not found: ${clerkId}`);
       return;
@@ -402,12 +420,15 @@ export async function refreshUserData(clerkId: string): Promise<void> {
 
     if (user) {
       user.email = clerkUser.emailAddresses[0]?.emailAddress;
-      user.name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || undefined;
-      user.emailVerified = clerkUser.emailAddresses[0]?.verification?.status === 'verified';
+      user.name =
+        `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
+        undefined;
+      user.emailVerified =
+        clerkUser.emailAddresses[0]?.verification?.status === 'verified';
       user.profileImage = clerkUser.imageUrl;
       await user.save();
     }
-    
+
     logger.info(`User data refreshed for ${clerkId}`);
   } catch (error) {
     logger.error(`Failed to refresh user data for ${clerkId}`, { error });

@@ -5,10 +5,15 @@ import { logger } from '../../core/config/logger';
 import { User } from '../../database/mongodb/models/User';
 
 // FIX: Updated Stripe API version to match installed SDK version
-const stripe = new Stripe(env.STRIPE_SECRET_KEY || '', { apiVersion: '2023-10-16' });
+const stripe = new Stripe(env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
+});
 
 // FIX: Added return type to ensure all code paths return a value
-export async function handleStripeWebhook(req: Request, res: Response): Promise<Response> {
+export async function handleStripeWebhook(
+  req: Request,
+  res: Response
+): Promise<Response> {
   const sig = req.headers['stripe-signature'] as string;
   if (!sig || !env.STRIPE_WEBHOOK_SECRET) {
     return res.status(400).end();
@@ -18,7 +23,7 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      env.STRIPE_WEBHOOK_SECRET,
+      env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
     logger.error('Stripe webhook signature verification failed', err as Error);
@@ -58,7 +63,11 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
   }
 }
 
-async function updateSubscription(userId: string, subscription: string, customerId?: string) {
+async function updateSubscription(
+  userId: string,
+  subscription: string,
+  customerId?: string
+) {
   await User.findByIdAndUpdate(userId, {
     subscription,
     stripeCustomerId: customerId,

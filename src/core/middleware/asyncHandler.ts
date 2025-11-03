@@ -26,7 +26,9 @@ export function asyncMiddleware(
  * Create a middleware that runs multiple async middlewares in sequence
  */
 export function asyncPipeline(
-  ...middlewares: Array<(req: Request, res: Response, next: NextFunction) => Promise<void>>
+  ...middlewares: Array<
+    (req: Request, res: Response, next: NextFunction) => Promise<void>
+  >
 ): RequestHandler {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -51,11 +53,11 @@ export function asyncPipeline(
 export function wrapRouter(router: any): any {
   const methods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'];
 
-  methods.forEach(method => {
+  methods.forEach((method) => {
     const original = router[method];
     router[method] = function (...args: any[]) {
       // Find route handlers and wrap them
-      const wrappedArgs = args.map(arg => {
+      const wrappedArgs = args.map((arg) => {
         if (typeof arg === 'function') {
           return asyncHandler(arg);
         }
@@ -82,11 +84,11 @@ export function asyncWithTimeout<T>(
     }, timeoutMs);
 
     promise
-      .then(result => {
+      .then((result) => {
         clearTimeout(timeout);
         resolve(result);
       })
-      .catch(error => {
+      .catch((error) => {
         clearTimeout(timeout);
         reject(error);
       });
@@ -131,7 +133,7 @@ export async function retryAsync<T>(
         onRetry(lastError, attempt);
       }
 
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       delay = Math.min(delay * factor, maxDelay);
     }
   }
@@ -171,7 +173,7 @@ export async function parallelAsync<T>(
     if (executing.length >= maxConcurrency) {
       await Promise.race(executing);
       executing.splice(
-        executing.findIndex(p => p === promise),
+        executing.findIndex((p) => p === promise),
         1
       );
     }

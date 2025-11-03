@@ -13,7 +13,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const session = await createCheckoutSession(req.user!.id, req.body.priceId);
     res.json(success({ url: session.url }));
-  }),
+  })
 );
 
 router.post(
@@ -23,9 +23,11 @@ router.post(
     const user = req.user!;
     // For simplicity, we assume stripeCustomerId exists on user model
     // In production, you'd load the full record
-    const session = await createPortalSession((user as any).stripeCustomerId || '');
+    const session = await createPortalSession(
+      (user as any).stripeCustomerId || ''
+    );
     res.json(success({ url: session.url }));
-  }),
+  })
 );
 
 // Stripe requires raw body for signature verification; in server.ts you'll need to

@@ -17,7 +17,10 @@ interface EmailPayload {
 
 export async function sendEmail({ to, subject, html, text }: EmailPayload) {
   if (!features.sendgrid) {
-    logger.warn('SendGrid not configured, skipping email send', { to, subject });
+    logger.warn('SendGrid not configured, skipping email send', {
+      to,
+      subject,
+    });
     return;
   }
 

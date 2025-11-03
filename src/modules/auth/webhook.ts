@@ -19,7 +19,7 @@ interface ClerkWebhookEvent {
  */
 function verifyWebhookSignature(req: Request): ClerkWebhookEvent {
   const webhookSecret = env.CLERK_WEBHOOK_SECRET;
-  
+
   if (!webhookSecret) {
     throw new Error('Clerk webhook secret not configured');
   }
@@ -50,47 +50,49 @@ function verifyWebhookSignature(req: Request): ClerkWebhookEvent {
 /**
  * Handle Clerk webhook events
  */
-export const handleClerkWebhook = asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const event = verifyWebhookSignature(req);
+export const handleClerkWebhook = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const event = verifyWebhookSignature(req);
 
-    logger.info('Clerk webhook received', {
-      type: event.type,
-      id: event.data.id,
-    });
+      logger.info('Clerk webhook received', {
+        type: event.type,
+        id: event.data.id,
+      });
 
-    // Handle different event types
-    switch (event.type) {
-      case 'user.created':
-        await handleUserCreated(event.data);
-        break;
+      // Handle different event types
+      switch (event.type) {
+        case 'user.created':
+          await handleUserCreated(event.data);
+          break;
 
-      case 'user.updated':
-        await handleUserUpdated(event.data);
-        break;
+        case 'user.updated':
+          await handleUserUpdated(event.data);
+          break;
 
-      case 'user.deleted':
-        await handleUserDeleted(event.data);
-        break;
+        case 'user.deleted':
+          await handleUserDeleted(event.data);
+          break;
 
-      case 'email.created':
-        await handleEmailCreated(event.data);
-        break;
+        case 'email.created':
+          await handleEmailCreated(event.data);
+          break;
 
-      case 'session.created':
-        await handleSessionCreated(event.data);
-        break;
+        case 'session.created':
+          await handleSessionCreated(event.data);
+          break;
 
-      default:
-        logger.info(`Unhandled webhook event type: ${event.type}`);
+        default:
+          logger.info(`Unhandled webhook event type: ${event.type}`);
+      }
+
+      res.status(200).json({ received: true });
+    } catch (error) {
+      logger.error('Webhook processing error', { error });
+      res.status(400).json({ error: 'Webhook processing failed' });
     }
-
-    res.status(200).json({ received: true });
-  } catch (error) {
-    logger.error('Webhook processing error', { error });
-    res.status(400).json({ error: 'Webhook processing failed' });
   }
-});
+);
 
 /**
  * Handle user.created event
@@ -100,8 +102,11 @@ async function handleUserCreated(userData: any): Promise<void> {
     const userInfo = {
       clerkId: userData.id,
       email: userData.email_addresses[0]?.email_address,
-      name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || undefined,
-      emailVerified: userData.email_addresses[0]?.verification?.status === 'verified',
+      name:
+        `${userData.first_name || ''} ${userData.last_name || ''}`.trim() ||
+        undefined,
+      emailVerified:
+        userData.email_addresses[0]?.verification?.status === 'verified',
       profileImage: userData.image_url,
     };
 
@@ -129,8 +134,11 @@ async function handleUserUpdated(userData: any): Promise<void> {
   try {
     const updates = {
       email: userData.email_addresses[0]?.email_address,
-      name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || undefined,
-      emailVerified: userData.email_addresses[0]?.verification?.status === 'verified',
+      name:
+        `${userData.first_name || ''} ${userData.last_name || ''}`.trim() ||
+        undefined,
+      emailVerified:
+        userData.email_addresses[0]?.verification?.status === 'verified',
       profileImage: userData.image_url,
     };
 
@@ -205,7 +213,10 @@ async function handleSessionCreated(sessionData: any): Promise<void> {
       logger.debug(`User last login updated in MongoDB: ${userId}`);
     }
   } catch (error) {
-    logger.error('Error handling session.created webhook', { error, sessionData });
+    logger.error('Error handling session.created webhook', {
+      error,
+      sessionData,
+    });
     // Don't throw - this is not critical
   }
 }

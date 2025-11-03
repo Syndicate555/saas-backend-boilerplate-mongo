@@ -68,11 +68,11 @@ export function getUploadQueue(): Queue | null {
 export const emailQueue = {
   get instance() {
     return getEmailQueue();
-  }
+  },
 };
 
 export const uploadQueue = {
   get instance() {
     return getUploadQueue();
-  }
+  },
 };

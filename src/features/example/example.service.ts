@@ -19,10 +19,7 @@ export class ExampleService {
   /**
    * Create a new example
    */
-  async create(
-    userId: string,
-    data: CreateExampleInput
-  ): Promise<IExample> {
+  async create(userId: string, data: CreateExampleInput): Promise<IExample> {
     try {
       // Check if user already has an example with the same name
       const existing = await Example.findOne({
@@ -94,7 +91,10 @@ export class ExampleService {
   /**
    * List examples with filtering and pagination
    */
-  async list(query: ListExamplesQuery, currentUserId?: string): Promise<{
+  async list(
+    query: ListExamplesQuery,
+    currentUserId?: string
+  ): Promise<{
     data: IExample[];
     total: number;
     page: number;
@@ -341,7 +341,10 @@ export class ExampleService {
   /**
    * Bulk delete examples
    */
-  async bulkDelete(ids: string[], userId: string): Promise<{
+  async bulkDelete(
+    ids: string[],
+    userId: string
+  ): Promise<{
     deleted: number;
     failed: string[];
   }> {
@@ -369,26 +372,24 @@ export class ExampleService {
    * Get user's statistics
    */
   async getUserStats(userId: string): Promise<any> {
-    const [
-      total,
-      published,
-      drafts,
-      archived,
-      totalViews,
-      popularExample,
-    ] = await Promise.all([
-      Example.countDocuments({ userId, deletedAt: null }),
-      Example.countDocuments({ userId, status: 'published', deletedAt: null }),
-      Example.countDocuments({ userId, status: 'draft', deletedAt: null }),
-      Example.countDocuments({ userId, status: 'archived', deletedAt: null }),
-      Example.aggregate([
-        { $match: { userId, deletedAt: null } },
-        { $group: { _id: null, totalViews: { $sum: '$viewCount' } } },
-      ]),
-      Example.findOne({ userId, deletedAt: null })
-        .sort({ viewCount: -1 })
-        .limit(1),
-    ]);
+    const [total, published, drafts, archived, totalViews, popularExample] =
+      await Promise.all([
+        Example.countDocuments({ userId, deletedAt: null }),
+        Example.countDocuments({
+          userId,
+          status: 'published',
+          deletedAt: null,
+        }),
+        Example.countDocuments({ userId, status: 'draft', deletedAt: null }),
+        Example.countDocuments({ userId, status: 'archived', deletedAt: null }),
+        Example.aggregate([
+          { $match: { userId, deletedAt: null } },
+          { $group: { _id: null, totalViews: { $sum: '$viewCount' } } },
+        ]),
+        Example.findOne({ userId, deletedAt: null })
+          .sort({ viewCount: -1 })
+          .limit(1),
+      ]);
 
     return {
       total,

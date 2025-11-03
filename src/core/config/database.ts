@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 import { logger } from './logger';
-import { connectMongoDB, disconnectMongoDB } from '../../database/mongodb/connection';
+import {
+  connectMongoDB,
+  disconnectMongoDB,
+} from '../../database/mongodb/connection';
 
 export interface DatabaseConnection {
   connect(): Promise<void>;

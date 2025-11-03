@@ -13,7 +13,7 @@ export class ExampleController {
    */
   create = asyncHandler(async (req: Request, res: Response) => {
     const example = await exampleService.create(req.user!.id, req.body);
-    
+
     res.status(201).json(
       success(example, {
         message: 'Example created successfully',
@@ -44,14 +44,9 @@ export class ExampleController {
    * GET /api/examples
    */
   list = asyncHandler(async (req: Request, res: Response) => {
-    const result = await exampleService.list(
-      req.query as any,
-      req.user?.id
-    );
-    
-    res.json(
-      paginated(result.data, result.total, result.page, result.limit)
-    );
+    const result = await exampleService.list(req.query as any, req.user?.id);
+
+    res.json(paginated(result.data, result.total, result.page, result.limit));
   });
 
   /**
@@ -63,11 +58,7 @@ export class ExampleController {
     // AUDIT_STATUS: Authenticated user updating their own example
     const userId = req.user!.id as string;
 
-    const example = await exampleService.update(
-      id as string,
-      userId,
-      req.body
-    );
+    const example = await exampleService.update(id as string, userId, req.body);
 
     res.json(
       success(example, {
@@ -137,9 +128,9 @@ export class ExampleController {
    */
   bulkDelete = asyncHandler(async (req: Request, res: Response) => {
     const { ids } = req.body;
-    
+
     const result = await exampleService.bulkDelete(ids, req.user!.id);
-    
+
     res.json(
       success(result, {
         message: `${result.deleted} examples deleted successfully`,
@@ -153,7 +144,7 @@ export class ExampleController {
    */
   getUserStats = asyncHandler(async (req: Request, res: Response) => {
     const stats = await exampleService.getUserStats(req.user!.id);
-    
+
     res.json(success(stats));
   });
 
@@ -179,12 +170,10 @@ export class ExampleController {
       ...req.query,
       userId: req.user!.id,
     };
-    
+
     const result = await exampleService.list(query as any, req.user!.id);
-    
-    res.json(
-      paginated(result.data, result.total, result.page, result.limit)
-    );
+
+    res.json(paginated(result.data, result.total, result.page, result.limit));
   });
 }
 

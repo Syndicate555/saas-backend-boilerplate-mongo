@@ -22,7 +22,9 @@ export function initializeRedis(): Redis | null {
     redis = new Redis(env.REDIS_URL!, {
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
-        logger.warn(`Redis connection attempt ${times}, retrying in ${delay}ms...`);
+        logger.warn(
+          `Redis connection attempt ${times}, retrying in ${delay}ms...`
+        );
         return delay;
       },
       maxRetriesPerRequest: 3,
@@ -98,22 +100,23 @@ export async function get<T = string>(key: string): Promise<T | null> {
  * Helper function to set a value in Redis
  */
 export async function set(
-  key: string, 
-  value: any, 
+  key: string,
+  value: any,
   ttl?: number
 ): Promise<boolean> {
   const client = getRedisClient();
   if (!client) return false;
 
   try {
-    const serialized = typeof value === 'string' ? value : JSON.stringify(value);
-    
+    const serialized =
+      typeof value === 'string' ? value : JSON.stringify(value);
+
     if (ttl) {
       await client.setex(key, ttl, serialized);
     } else {
       await client.set(key, serialized);
     }
-    
+
     return true;
   } catch (error) {
     logger.error('Redis set error', { error, key });

@@ -3,7 +3,9 @@ import { env } from '../../core/config/env';
 import { User } from '../../database/mongodb/models/User';
 
 // FIX: Updated Stripe API version to match installed SDK version
-const stripe = new Stripe(env.STRIPE_SECRET_KEY || '', { apiVersion: '2023-10-16' });
+const stripe = new Stripe(env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
+});
 
 export async function createCheckoutSession(userId: string, priceId: string) {
   const user = await User.findById(userId);

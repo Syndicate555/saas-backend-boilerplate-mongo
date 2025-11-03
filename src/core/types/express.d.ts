@@ -83,7 +83,12 @@ declare global {
       /**
        * Custom paginated response helper
        */
-      paginated?: (data: any[], total: number, page: number, limit: number) => void;
+      paginated?: (
+        data: any[],
+        total: number,
+        page: number,
+        limit: number
+      ) => void;
     }
   }
 }

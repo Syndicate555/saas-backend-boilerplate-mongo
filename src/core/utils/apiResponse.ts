@@ -119,7 +119,9 @@ export function updated<T = any>(data: T): ApiResponse<T> {
 /**
  * Create a standardized response for deleted resources
  */
-export function deleted(message: string = 'Resource deleted successfully'): ApiResponse {
+export function deleted(
+  message: string = 'Resource deleted successfully'
+): ApiResponse {
   return {
     success: true,
     data: { message },

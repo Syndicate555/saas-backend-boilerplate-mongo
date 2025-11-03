@@ -66,7 +66,7 @@ export async function connectMongoDB(
       if (attempt < retries) {
         const delay = retryDelay * Math.pow(2, attempt - 1); // Exponential backoff
         logger.info(`Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
@@ -120,7 +120,7 @@ async function createIndexes(): Promise<void> {
 
     // Create indexes for User model
     await User.createIndexes();
-    
+
     // Create indexes for AuditLog model
     await AuditLog.createIndexes();
 
@@ -186,10 +186,10 @@ export async function withTransaction<T>(
   }
 
   const session = await connection.startSession();
-  
+
   try {
     let result: T;
-    
+
     await session.withTransaction(async () => {
       result = await fn(session);
     });

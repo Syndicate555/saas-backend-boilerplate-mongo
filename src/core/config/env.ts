@@ -14,7 +14,9 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const envSchema = z.object({
   // Application
-  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'staging', 'production'])
+    .default('development'),
   PORT: z.string().transform(Number).default('3000'),
 
   // Database - MongoDB only
@@ -43,7 +45,7 @@ const envSchema = z.object({
   // SendGrid (optional)
   SENDGRID_API_KEY: z.string().optional(),
   SENDGRID_FROM_EMAIL: z.preprocess(
-    (val) => val === '' ? undefined : val,
+    (val) => (val === '' ? undefined : val),
     z.string().email().optional()
   ),
 
@@ -72,34 +74,52 @@ const env = envResult.data;
 // Validate MongoDB configuration
 if (!env.MONGO_URI) {
   console.error('❌ MONGO_URI is required for MongoDB connection');
-  console.error('💡 Set MONGO_URI=mongodb://localhost:27017/saas-dev in your .env file');
+  console.error(
+    '💡 Set MONGO_URI=mongodb://localhost:27017/saas-dev in your .env file'
+  );
   process.exit(1);
 }
 
 // Validate S3 configuration if any S3 env var is set
-if ((env.AWS_ACCESS_KEY_ID || env.AWS_SECRET_ACCESS_KEY || env.S3_BUCKET) &&
-    !(env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY && env.S3_BUCKET)) {
+if (
+  (env.AWS_ACCESS_KEY_ID || env.AWS_SECRET_ACCESS_KEY || env.S3_BUCKET) &&
+  !(env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY && env.S3_BUCKET)
+) {
   console.error('❌ All AWS S3 variables must be set together:');
   console.error('   - AWS_ACCESS_KEY_ID');
   console.error('   - AWS_SECRET_ACCESS_KEY');
   console.error('   - S3_BUCKET');
-  console.error('💡 Either set all three or remove all to disable file uploads');
+  console.error(
+    '💡 Either set all three or remove all to disable file uploads'
+  );
   process.exit(1);
 }
 
 // Validate Stripe configuration
-if ((env.STRIPE_SECRET_KEY && !env.STRIPE_WEBHOOK_SECRET) ||
-    (!env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET)) {
-  console.error('❌ Both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET must be set together');
-  console.error('💡 Get these from your Stripe dashboard at https://dashboard.stripe.com/test/apikeys');
+if (
+  (env.STRIPE_SECRET_KEY && !env.STRIPE_WEBHOOK_SECRET) ||
+  (!env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET)
+) {
+  console.error(
+    '❌ Both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET must be set together'
+  );
+  console.error(
+    '💡 Get these from your Stripe dashboard at https://dashboard.stripe.com/test/apikeys'
+  );
   process.exit(1);
 }
 
 // Validate SendGrid configuration
-if ((env.SENDGRID_API_KEY && !env.SENDGRID_FROM_EMAIL) ||
-    (!env.SENDGRID_API_KEY && env.SENDGRID_FROM_EMAIL)) {
-  console.error('❌ Both SENDGRID_API_KEY and SENDGRID_FROM_EMAIL must be set together');
-  console.error('💡 Get API key from https://app.sendgrid.com/settings/api_keys');
+if (
+  (env.SENDGRID_API_KEY && !env.SENDGRID_FROM_EMAIL) ||
+  (!env.SENDGRID_API_KEY && env.SENDGRID_FROM_EMAIL)
+) {
+  console.error(
+    '❌ Both SENDGRID_API_KEY and SENDGRID_FROM_EMAIL must be set together'
+  );
+  console.error(
+    '💡 Get API key from https://app.sendgrid.com/settings/api_keys'
+  );
   process.exit(1);
 }
 

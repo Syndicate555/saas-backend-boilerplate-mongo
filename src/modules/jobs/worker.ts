@@ -56,7 +56,7 @@ export async function startWorkers() {
       async (job) => {
         await sendEmail(job.data);
       },
-      { connection: connectionOptions },
+      { connection: connectionOptions }
     );
     workers.push(emailWorker);
 
@@ -66,7 +66,7 @@ export async function startWorkers() {
       async (job) => {
         await processUpload(job.data);
       },
-      { connection: connectionOptions },
+      { connection: connectionOptions }
     );
     workers.push(uploadWorker);
 
@@ -82,7 +82,7 @@ export async function stopWorkers() {
   }
 
   logger.info('Stopping background job workers...');
-  await Promise.all(workers.map(worker => worker.close()));
+  await Promise.all(workers.map((worker) => worker.close()));
   workers.length = 0;
   logger.info('All workers stopped');
 }

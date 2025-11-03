@@ -29,10 +29,7 @@ const router = Router();
 router.get(
   '/popular',
   optionalAuth,
-  validate(
-    listExamplesQuerySchema.pick({ limit: true }),
-    'query'
-  ),
+  validate(listExamplesQuerySchema.pick({ limit: true }), 'query'),
   exampleController.getPopular
 );
 
@@ -65,11 +62,7 @@ router.get(
 );
 
 // Get user statistics
-router.get(
-  '/stats',
-  requireAuth,
-  exampleController.getUserStats
-);
+router.get('/stats', requireAuth, exampleController.getUserStats);
 
 // Create new example
 router.post(
@@ -138,10 +131,8 @@ router.get(
       { ...req.query, includeDeleted: true } as any,
       req.user!.id
     );
-    
-    res.json(
-      paginated(result.data, result.total, result.page, result.limit)
-    );
+
+    res.json(paginated(result.data, result.total, result.page, result.limit));
   })
 );
 

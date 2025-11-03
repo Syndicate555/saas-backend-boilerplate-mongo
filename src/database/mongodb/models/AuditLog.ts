@@ -162,23 +162,21 @@ auditLogSchema.index(
 /**
  * Create an audit log entry
  */
-auditLogSchema.statics['log'] = async function (
-  data: {
-    userId?: string;
-    userEmail?: string;
-    action: AuditAction | string;
-    resource: string;
-    resourceId?: string;
-    metadata?: any;
-    changes?: { before?: any; after?: any };
-    ipAddress?: string;
-    userAgent?: string;
-    requestId?: string;
-    duration?: number;
-    statusCode?: number;
-    error?: Error;
-  }
-): Promise<IAuditLog> {
+auditLogSchema.statics['log'] = async function (data: {
+  userId?: string;
+  userEmail?: string;
+  action: AuditAction | string;
+  resource: string;
+  resourceId?: string;
+  metadata?: any;
+  changes?: { before?: any; after?: any };
+  ipAddress?: string;
+  userAgent?: string;
+  requestId?: string;
+  duration?: number;
+  statusCode?: number;
+  error?: Error;
+}): Promise<IAuditLog> {
   const logEntry = {
     ...data,
     error: data.error
@@ -269,74 +267,69 @@ auditLogSchema.statics['getStats'] = async function (
   startDate: Date,
   endDate: Date
 ): Promise<any> {
-  const [
-    totalLogs,
-    actionStats,
-    resourceStats,
-    errorCount,
-    avgDuration,
-  ] = await Promise.all([
-    // Total logs
-    this.countDocuments({
-      createdAt: { $gte: startDate, $lte: endDate },
-    }),
+  const [totalLogs, actionStats, resourceStats, errorCount, avgDuration] =
+    await Promise.all([
+      // Total logs
+      this.countDocuments({
+        createdAt: { $gte: startDate, $lte: endDate },
+      }),
 
-    // Logs by action
-    this.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
+      // Logs by action
+      this.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startDate, $lte: endDate },
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$action',
-          count: { $sum: 1 },
+        {
+          $group: {
+            _id: '$action',
+            count: { $sum: 1 },
+          },
         },
-      },
-      { $sort: { count: -1 } },
-    ]),
+        { $sort: { count: -1 } },
+      ]),
 
-    // Logs by resource
-    this.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
+      // Logs by resource
+      this.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startDate, $lte: endDate },
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$resource',
-          count: { $sum: 1 },
+        {
+          $group: {
+            _id: '$resource',
+            count: { $sum: 1 },
+          },
         },
-      },
-      { $sort: { count: -1 } },
-    ]),
+        { $sort: { count: -1 } },
+      ]),
 
-    // Error count
-    this.countDocuments({
-      createdAt: { $gte: startDate, $lte: endDate },
-      error: { $exists: true },
-    }),
+      // Error count
+      this.countDocuments({
+        createdAt: { $gte: startDate, $lte: endDate },
+        error: { $exists: true },
+      }),
 
-    // Average duration
-    this.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
-          duration: { $exists: true },
+      // Average duration
+      this.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startDate, $lte: endDate },
+            duration: { $exists: true },
+          },
         },
-      },
-      {
-        $group: {
-          _id: null,
-          avgDuration: { $avg: '$duration' },
-          minDuration: { $min: '$duration' },
-          maxDuration: { $max: '$duration' },
+        {
+          $group: {
+            _id: null,
+            avgDuration: { $avg: '$duration' },
+            minDuration: { $min: '$duration' },
+            maxDuration: { $max: '$duration' },
+          },
         },
-      },
-    ]),
-  ]);
+      ]),
+    ]);
 
   return {
     total: totalLogs,
@@ -376,4 +369,8 @@ auditLogSchema.statics['cleanup'] = async function (
 };
 
 // Prevent model overwrite error in development with hot reload
-export const AuditLog = (mongoose.models['AuditLog'] || mongoose.model<IAuditLog, IAuditLogModel>('AuditLog', auditLogSchema)) as IAuditLogModel;
+export const AuditLog = (mongoose.models['AuditLog'] ||
+  mongoose.model<IAuditLog, IAuditLogModel>(
+    'AuditLog',
+    auditLogSchema
+  )) as IAuditLogModel;

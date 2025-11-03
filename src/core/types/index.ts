@@ -1,7 +1,12 @@
 export * from './errors';
 // Note: express.d.ts contains only type declarations for Express global augmentation
 // and does not export any values, so it should not be re-exported here
-export type { AuthenticatedUser, PaginationParams, SortParams, FilterParams } from './express.d';
+export type {
+  AuthenticatedUser,
+  PaginationParams,
+  SortParams,
+  FilterParams,
+} from './express.d';
 
 /**
  * Generic API response format

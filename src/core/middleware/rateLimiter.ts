@@ -54,7 +54,10 @@ function createRateLimiter(options: {
         });
       } catch (error) {
         // If Redis store creation fails, fall back to memory store
-        console.warn(`Failed to create Redis store for rate limiter ${options.name}, using memory store:`, error);
+        console.warn(
+          `Failed to create Redis store for rate limiter ${options.name}, using memory store:`,
+          error
+        );
       }
     }
   }
@@ -186,7 +189,9 @@ export function subscriptionBasedLimiter(
       return req.user?.id || req.ip || 'unknown';
     },
     handler: (_req: Request, _res: Response) => {
-      throw new RateLimitError('Rate limit exceeded for your subscription tier.');
+      throw new RateLimitError(
+        'Rate limit exceeded for your subscription tier.'
+      );
     },
   };
 
@@ -204,7 +209,10 @@ export function subscriptionBasedLimiter(
           }),
         });
       } catch (error) {
-        console.warn('Failed to create Redis store for subscription rate limiter, using memory store:', error);
+        console.warn(
+          'Failed to create Redis store for subscription rate limiter, using memory store:',
+          error
+        );
       }
     }
   }

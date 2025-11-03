@@ -50,7 +50,9 @@ export const listExamplesQuerySchema = z.object({
     .transform((val) => val.split(',').map((tag) => tag.trim().toLowerCase()))
     .optional(),
   search: z.string().min(1).optional(),
-  sortBy: z.enum(['name', 'createdAt', 'updatedAt', 'viewCount']).default('createdAt'),
+  sortBy: z
+    .enum(['name', 'createdAt', 'updatedAt', 'viewCount'])
+    .default('createdAt'),
   order: z.enum(['asc', 'desc']).default('desc'),
   userId: commonSchemas.objectId.optional(),
 });

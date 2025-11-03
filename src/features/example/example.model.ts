@@ -80,11 +80,13 @@ const exampleSchema = new Schema<IExample, IExampleModel>(
       default: 'draft',
       index: true,
     },
-    tags: [{
-      type: String,
-      trim: true,
-      lowercase: true,
-    }],
+    tags: [
+      {
+        type: String,
+        trim: true,
+        lowercase: true,
+      },
+    ],
     metadata: {
       type: Schema.Types.Mixed,
       default: {},
@@ -142,7 +144,11 @@ exampleSchema.virtual('isDeleted').get(function (this: IExample) {
 // Pre-save middleware
 exampleSchema.pre('save', function (next) {
   // Set publishedAt when status changes to published
-  if (this.isModified('status') && this.status === 'published' && !this.publishedAt) {
+  if (
+    this.isModified('status') &&
+    this.status === 'published' &&
+    !this.publishedAt
+  ) {
     this.publishedAt = new Date();
   }
   next();
@@ -173,7 +179,7 @@ exampleSchema.statics = {
     } = {}
   ): Promise<IExample[]> {
     const query: any = { userId };
-    
+
     if (options.status) {
       query.status = options.status;
     }
@@ -235,23 +241,14 @@ exampleSchema.statics = {
   /**
    * Increment view count
    */
-  async incrementViewCount(
-    this: Model<IExample>,
-    id: string
-  ): Promise<void> {
-    await this.updateOne(
-      { _id: id },
-      { $inc: { viewCount: 1 } }
-    );
+  async incrementViewCount(this: Model<IExample>, id: string): Promise<void> {
+    await this.updateOne({ _id: id }, { $inc: { viewCount: 1 } });
   },
 
   /**
    * Soft delete
    */
-  async softDelete(
-    this: Model<IExample>,
-    id: string
-  ): Promise<boolean> {
+  async softDelete(this: Model<IExample>, id: string): Promise<boolean> {
     const result = await this.updateOne(
       { _id: id, deletedAt: null },
       { deletedAt: new Date() }
@@ -262,10 +259,7 @@ exampleSchema.statics = {
   /**
    * Restore from soft delete
    */
-  async restore(
-    this: Model<IExample>,
-    id: string
-  ): Promise<boolean> {
+  async restore(this: Model<IExample>, id: string): Promise<boolean> {
     const result = await this.updateOne(
       { _id: id, deletedAt: { $ne: null } },
       { deletedAt: null }
@@ -312,4 +306,8 @@ exampleSchema.methods = {
 };
 
 // Prevent model overwrite error in development with hot reload
-export const Example = (mongoose.models['Example'] || mongoose.model<IExample, IExampleModel>('Example', exampleSchema)) as IExampleModel;
+export const Example = (mongoose.models['Example'] ||
+  mongoose.model<IExample, IExampleModel>(
+    'Example',
+    exampleSchema
+  )) as IExampleModel;

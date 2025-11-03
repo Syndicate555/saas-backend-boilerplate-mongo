@@ -44,9 +44,7 @@ export function validate(
   target: ValidationTarget = 'body',
   options: ValidationOptions = {}
 ) {
-  const {
-    message = 'Validation failed',
-  } = options;
+  const { message = 'Validation failed' } = options;
 
   return async (
     req: Request,

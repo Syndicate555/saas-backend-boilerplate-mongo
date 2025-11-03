@@ -18,10 +18,7 @@ export function notFound(
 /**
  * Alternative 404 handler that sends response directly
  */
-export function notFoundHandler(
-  req: Request,
-  res: Response
-): void {
+export function notFoundHandler(req: Request, res: Response): void {
   res.status(404).json({
     success: false,
     error: {

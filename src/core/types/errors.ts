@@ -162,7 +162,10 @@ export function isValidationError(error: unknown): error is ValidationError {
 /**
  * Utility to create an error based on status code
  */
-export function createHttpError(statusCode: number, message: string): BaseError {
+export function createHttpError(
+  statusCode: number,
+  message: string
+): BaseError {
   switch (statusCode) {
     case 400:
       return new ValidationError(message);

@@ -32,7 +32,9 @@ async function bootstrap(): Promise<void> {
       logger.info('💾 Initializing Redis...');
       initializeRedis();
     } else {
-      logger.warn('⚠️  Redis not configured - jobs and realtime features disabled');
+      logger.warn(
+        '⚠️  Redis not configured - jobs and realtime features disabled'
+      );
     }
 
     // Initialize authentication
@@ -55,7 +57,7 @@ async function bootstrap(): Promise<void> {
     await mountRoutes(app);
 
     // Start server and store reference
-    server = await startServer(app) as unknown as Server;
+    server = (await startServer(app)) as unknown as Server;
 
     logger.info('✅ Application started successfully');
   } catch (error) {
