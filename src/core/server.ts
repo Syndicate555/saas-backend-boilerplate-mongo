@@ -7,7 +7,6 @@ import { env, features } from './config/env';
 import { logger } from './config/logger';
 import { apiLimiter } from './middleware/rateLimiter';
 import { requestLogger, errorLogger } from './middleware/requestLogger';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { responseHelpers } from './utils/apiResponse';
 import { attachPagination } from './utils/pagination';
 import { HealthStatus } from './types';
@@ -106,7 +105,6 @@ export function createServer(): Express {
   // Health check endpoint
   app.get('/health', async (_req: Request, res: Response) => {
     try {
-      // AUDIT: Fixed HealthStatus type - conditionally include version to satisfy exactOptionalPropertyTypes
       const version = process.env['npm_package_version'];
       const health: HealthStatus = {
         status: 'ok',
@@ -176,6 +174,7 @@ export function createServer(): Express {
   }
 
   // Mount API routes (to be added by modules)
+  // Routes will be mounted in index.ts via mountRoutes()
   // app.use('/api/auth', authRoutes);
   // app.use('/api/users', userRoutes);
   // app.use('/api/payments', paymentRoutes);
@@ -189,11 +188,8 @@ export function createServer(): Express {
     app.use(Sentry.Handlers.errorHandler());
   }
 
-  // 404 handler (must be after all routes)
-  app.use(notFoundHandler);
-
-  // Error handler (must be last)
-  app.use(errorHandler);
+  // NOTE: 404 and error handlers are now registered in index.ts AFTER all routes are mounted
+  // This ensures that all feature routes are registered before the 404 handler catches them
 
   return app;
 }

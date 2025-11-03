@@ -15,7 +15,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const envSchema = z.object({
   // Application
   NODE_ENV: z
-    .enum(['development', 'staging', 'production'])
+    .enum(['development', 'staging', 'production', 'test'])
     .default('development'),
   PORT: z.string().transform(Number).default('3000'),
 

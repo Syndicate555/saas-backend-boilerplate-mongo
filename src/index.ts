@@ -14,6 +14,7 @@ import { logger } from './core/config/logger';
 import { env, features } from './core/config/env';
 import { initializeRedis, closeRedis } from './core/config/redis';
 import { database } from './core/config/database';
+import { notFoundHandler, errorHandler } from './core/middleware/errorHandler';
 
 // Track server instance for graceful shutdown
 let server: Server | null = null;
@@ -55,6 +56,12 @@ async function bootstrap(): Promise<void> {
 
     // Mount API routes
     await mountRoutes(app);
+
+    // Register 404 handler (must be after all routes)
+    app.use(notFoundHandler);
+
+    // Register error handler (must be last)
+    app.use(errorHandler);
 
     // Start server and store reference
     server = (await startServer(app)) as unknown as Server;

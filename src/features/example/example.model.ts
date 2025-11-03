@@ -6,7 +6,7 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 export interface IExample extends Document {
   name: string;
   description?: string;
-  userId: mongoose.Types.ObjectId;
+  userId: string; // Changed from ObjectId to string to support Clerk user IDs
   status: 'draft' | 'published' | 'archived';
   tags?: string[];
   metadata?: Record<string, any>;
@@ -69,8 +69,7 @@ const exampleSchema = new Schema<IExample, IExampleModel>(
       maxlength: [500, 'Description cannot exceed 500 characters'],
     },
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
+      type: String,
       required: [true, 'User ID is required'],
       index: true,
     },
@@ -187,8 +186,7 @@ exampleSchema.statics = {
     return this.find(query)
       .sort(options.sort || { createdAt: -1 })
       .limit(options.limit || 20)
-      .skip(options.skip || 0)
-      .populate('userId', 'name email');
+      .skip(options.skip || 0);
   },
 
   /**
@@ -218,8 +216,7 @@ exampleSchema.statics = {
     return this.find(query)
       .sort({ score: { $meta: 'textScore' } })
       .limit(options.limit || 20)
-      .skip(options.skip || 0)
-      .populate('userId', 'name email');
+      .skip(options.skip || 0);
   },
 
   /**
@@ -234,8 +231,7 @@ exampleSchema.statics = {
       isPublic: true,
     })
       .sort({ viewCount: -1, publishedAt: -1 })
-      .limit(limit)
-      .populate('userId', 'name email');
+      .limit(limit);
   },
 
   /**
@@ -274,7 +270,7 @@ exampleSchema.methods = {
    * Check if user can edit this example
    */
   canEdit(this: IExample, userId: string): boolean {
-    return this.userId.toString() === userId;
+    return this.userId === userId;
   },
 
   /**

@@ -51,7 +51,7 @@ export interface IAuditLogModel extends Model<IAuditLog> {
  * Audit log document interface
  */
 export interface IAuditLog extends Document {
-  userId?: mongoose.Types.ObjectId;
+  userId?: string; // Changed from ObjectId to string to support Clerk user IDs
   userEmail?: string;
   action: AuditAction | string;
   resource: string;
@@ -80,8 +80,7 @@ export interface IAuditLog extends Document {
 const auditLogSchema = new Schema<IAuditLog>(
   {
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
+      type: String,
       index: true,
     },
     userEmail: {

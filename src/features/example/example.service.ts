@@ -68,19 +68,19 @@ export class ExampleService {
     userId?: string,
     incrementView: boolean = false
   ): Promise<IExample> {
-    const example = await Example.findById(id).populate('userId', 'name email');
+    const example = await Example.findById(id);
 
     if (!example) {
       throw new NotFoundError('Example not found');
     }
 
     // Check access permissions
-    if (!example.isPublic && example.userId.toString() !== userId) {
+    if (!example.isPublic && example.userId !== userId) {
       throw new ForbiddenError('You do not have access to this example');
     }
 
     // Increment view count if requested and not the owner
-    if (incrementView && example.userId.toString() !== userId) {
+    if (incrementView && example.userId !== userId) {
       // Call static method incrementViewCount
       await Example.incrementViewCount(id);
     }
@@ -113,7 +113,9 @@ export class ExampleService {
     } = query;
 
     const skip = (page - 1) * limit;
-    const filter: any = {};
+    const filter: any = {
+      deletedAt: null, // Explicitly exclude soft-deleted documents for countDocuments()
+    };
 
     // Build filter
     if (status) filter.status = status;
@@ -148,8 +150,7 @@ export class ExampleService {
         Example.find(searchFilter)
           .sort({ score: { $meta: 'textScore' }, ...sort })
           .limit(limit)
-          .skip(skip)
-          .populate('userId', 'name email'),
+          .skip(skip),
         Example.countDocuments(searchFilter),
       ]);
     } else {
@@ -157,8 +158,7 @@ export class ExampleService {
         Example.find(filter)
           .sort(sort)
           .limit(limit)
-          .skip(skip)
-          .populate('userId', 'name email'),
+          .skip(skip),
         Example.countDocuments(filter),
       ]);
     }

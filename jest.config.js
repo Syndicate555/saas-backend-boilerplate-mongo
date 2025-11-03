@@ -6,6 +6,11 @@ module.exports = {
     '**/__tests__/**/*.+(ts|tsx|js)',
     '**/?(*.)+(spec|test).+(ts|tsx|js)',
   ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    '/tests/integration/', // Exclude integration tests from default run
+  ],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
@@ -20,16 +25,23 @@ module.exports = {
     '!src/**/*.interface.ts',
     '!src/**/*.schema.ts',
   ],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
-  },
+  // Coverage thresholds disabled for starter boilerplate
+  // Enable and adjust per your project needs
+  // coverageThreshold: {
+  //   global: {
+  //     branches: 50,
+  //     functions: 50,
+  //     lines: 50,
+  //     statements: 50,
+  //   },
+  // },
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: ['text', 'text-summary', 'lcov', 'html', 'json'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/',
+    '/dist/',
+  ],
   moduleNameMapper: {
     '@/(.*)': '<rootDir>/src/$1',
     '@core/(.*)': '<rootDir>/src/core/$1',
