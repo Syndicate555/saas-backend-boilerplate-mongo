@@ -17,19 +17,9 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
   PORT: z.string().transform(Number).default('3000'),
 
-  // Database
-  DATABASE_TYPE: z.enum(['mongodb', 'supabase']).default('mongodb'),
-
-  // MongoDB
+  // Database - MongoDB only
+  DATABASE_TYPE: z.literal('mongodb').default('mongodb'),
   MONGO_URI: z.string().optional(),
-
-  // Supabase
-  SUPABASE_URL: z.preprocess(
-    (val) => val === '' ? undefined : val,
-    z.string().url().optional()
-  ),
-  SUPABASE_ANON_KEY: z.string().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 
   // Redis (optional - needed for jobs, realtime, advanced rate limiting)
   REDIS_URL: z.string().optional(),
@@ -79,16 +69,10 @@ if (!envResult.success) {
 // Additional validation
 const env = envResult.data;
 
-// Validate database configuration
-if (env.DATABASE_TYPE === 'mongodb' && !env.MONGO_URI) {
-  console.error('❌ MONGO_URI is required when DATABASE_TYPE is mongodb');
+// Validate MongoDB configuration
+if (!env.MONGO_URI) {
+  console.error('❌ MONGO_URI is required for MongoDB connection');
   console.error('💡 Set MONGO_URI=mongodb://localhost:27017/saas-dev in your .env file');
-  process.exit(1);
-}
-
-if (env.DATABASE_TYPE === 'supabase' && (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY)) {
-  console.error('❌ SUPABASE_URL and SUPABASE_ANON_KEY are required when DATABASE_TYPE is supabase');
-  console.error('💡 Get these from your Supabase project settings at https://supabase.com/dashboard');
   process.exit(1);
 }
 

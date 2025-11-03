@@ -376,4 +376,4 @@ auditLogSchema.statics['cleanup'] = async function (
 };
 
 // Prevent model overwrite error in development with hot reload
-export const AuditLog = (mongoose.models.AuditLog || mongoose.model<IAuditLog, IAuditLogModel>('AuditLog', auditLogSchema)) as IAuditLogModel;
+export const AuditLog = (mongoose.models['AuditLog'] || mongoose.model<IAuditLog, IAuditLogModel>('AuditLog', auditLogSchema)) as IAuditLogModel;

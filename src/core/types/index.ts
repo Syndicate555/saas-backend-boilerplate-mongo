@@ -86,7 +86,7 @@ export type Environment = 'development' | 'staging' | 'production';
 /**
  * Database type
  */
-export type DatabaseType = 'mongodb' | 'supabase';
+export type DatabaseType = 'mongodb';
 
 /**
  * Request context for logging

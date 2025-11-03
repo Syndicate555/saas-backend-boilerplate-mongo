@@ -1,5 +1,15 @@
 # Understanding the SaaS Backend Boilerplate (Part 1 of 2)
 
+> **⚠️ IMPORTANT NOTE**: This documentation was written for the dual MongoDB/Supabase version of this boilerplate.
+>
+> **The codebase has been migrated to MongoDB-only.** All Supabase references in this document are now outdated.
+>
+> For information about the migration and current MongoDB-only setup, see:
+> - [MONGODB_MIGRATION.md](../MONGODB_MIGRATION.md) - Migration guide
+> - [MIGRATION_SUMMARY.md](../MIGRATION_SUMMARY.md) - Summary of changes
+>
+> The database sections below contain historical Supabase information that no longer applies to the current codebase.
+
 This comprehensive guide covers the architecture, core systems, and middleware stack of this production-ready SaaS backend boilerplate.
 
 ---

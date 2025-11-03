@@ -1,7 +1,7 @@
 /**
  * Database Seed Script
  * Creates sample data for testing and development
- * Supports both MongoDB and Supabase
+ * MongoDB only
  */
 
 import { env } from '../src/core/config/env';
@@ -12,12 +12,6 @@ import { database } from '../src/core/config/database';
 import { Example } from '../src/features/example/example.model';
 import { AuditLog } from '../src/database/mongodb/models/AuditLog';
 import mongoose from 'mongoose';
-
-// Supabase imports
-import {
-  getSupabaseClient,
-  AuditLogRepository,
-} from '../src/database/supabase/client';
 
 /**
  * Sample data definitions
@@ -213,150 +207,6 @@ async function seedMongoDB(): Promise<void> {
   }
 }
 
-/**
- * Seed Supabase database
- */
-async function seedSupabase(): Promise<void> {
-  try {
-    logger.info('Starting Supabase seed...');
-
-    const client = getSupabaseClient();
-
-    // Create a test user first
-    let testUserId: string;
-
-    try {
-      logger.info('Creating/fetching test user for seed data...');
-
-      // Try to find existing seed user
-      const { data: existingUser, error: fetchError } = await client
-        .from('users')
-        .select('id')
-        .eq('email', 'seed@example.com')
-        .single();
-
-      if (!fetchError && existingUser) {
-        testUserId = existingUser.id;
-        logger.info('Using existing test user', { userId: testUserId });
-      } else {
-        // Create new user
-        const { data: newUser, error: createError } = await client
-          .from('users')
-          .insert({
-            email: 'seed@example.com',
-            name: 'Seed User',
-            clerk_id: 'seed_user_123',
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          logger.warn('Could not create test user', { error: createError });
-          testUserId = 'seed-placeholder-id';
-        } else {
-          testUserId = newUser.id;
-          logger.info('Test user created', { userId: testUserId });
-        }
-      }
-    } catch (error) {
-      logger.warn('Error managing test user', { error });
-      testUserId = 'seed-placeholder-id';
-    }
-
-    // Clear existing example data (for clean seed)
-    logger.info('Clearing existing example data...');
-    const { error: deleteError } = await client
-      .from('examples')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
-
-    if (deleteError && deleteError.code !== 'PGRST116') {
-      logger.warn('Could not clear examples table', { error: deleteError });
-    } else {
-      logger.info('Existing example data cleared');
-    }
-
-    // Create sample examples
-    logger.info('Creating sample examples...');
-    const exampleIds: string[] = [];
-
-    for (const example of sampleExamples) {
-      const { data: createdExample, error: createError } = await client
-        .from('examples')
-        .insert({
-          name: example.name,
-          description: example.description,
-          user_id: testUserId,
-          status: example.status,
-          tags: example.tags,
-          is_public: example.isPublic,
-          metadata: example.metadata,
-          view_count: Math.floor(Math.random() * 100),
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        logger.warn('Failed to create example', {
-          name: example.name,
-          error: createError,
-        });
-      } else {
-        exampleIds.push(createdExample.id);
-        logger.info('Example created', {
-          name: example.name,
-          id: createdExample.id,
-        });
-      }
-    }
-
-    logger.info('Sample examples created', { count: exampleIds.length });
-
-    // Create sample audit logs
-    logger.info('Creating sample audit logs...');
-    let auditLogCount = 0;
-
-    for (const log of sampleAuditLogs) {
-      const { error: createError } = await client.from('audit_logs').insert({
-        action: log.action,
-        resource: log.resource,
-        resource_id: exampleIds[0] || null,
-        user_email: log.userEmail,
-        metadata: log.metadata,
-        status_code: log.statusCode,
-        duration: Math.floor(Math.random() * 1000),
-      });
-
-      if (createError) {
-        logger.warn('Failed to create audit log', {
-          action: log.action,
-          error: createError,
-        });
-      } else {
-        auditLogCount++;
-      }
-    }
-
-    logger.info('Sample audit logs created', { count: auditLogCount });
-
-    // Log some statistics
-    const { count: exampleCount, error: countError1 } = await client
-      .from('examples')
-      .select('*', { count: 'exact', head: true });
-
-    const { count: auditCount, error: countError2 } = await client
-      .from('audit_logs')
-      .select('*', { count: 'exact', head: true });
-
-    logger.info('Supabase seed completed successfully', {
-      examples: countError1 ? 'unknown' : exampleCount,
-      auditLogs: countError2 ? 'unknown' : auditCount,
-    });
-  } catch (error) {
-    logger.error('Error seeding Supabase', { error });
-    throw error;
-  }
-}
 
 /**
  * Main seed function
@@ -373,12 +223,8 @@ async function main(): Promise<void> {
     // Connect to database
     await database.connect();
 
-    // Seed based on database type
-    if (env.DATABASE_TYPE === 'mongodb') {
-      await seedMongoDB();
-    } else if (env.DATABASE_TYPE === 'supabase') {
-      await seedSupabase();
-    }
+    // Seed MongoDB database
+    await seedMongoDB();
 
     const duration = Date.now() - startTime;
     logger.info('Database Seeding Completed Successfully', {
@@ -414,4 +260,4 @@ if (require.main === module) {
   });
 }
 
-export { seedMongoDB, seedSupabase };
+export { seedMongoDB };

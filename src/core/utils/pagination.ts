@@ -170,49 +170,6 @@ export function buildMongoQuery(filters: FilterParams): any {
 }
 
 /**
- * Build Supabase/PostgreSQL query from filters
- */
-export function buildSupabaseQuery(filters: FilterParams): any {
-  const conditions: string[] = [];
-  const values: any[] = [];
-
-  Object.keys(filters).forEach((key) => {
-    const value = filters[key];
-
-    if (key === 'search' && value) {
-      // Full text search
-      conditions.push(
-        `to_tsvector('english', name || ' ' || description) @@ plainto_tsquery('english', $${values.length + 1})`
-      );
-      values.push(value);
-    } else if (key === 'dateRange' && value) {
-      // Date range
-      if (value.$gte) {
-        conditions.push(`created_at >= $${values.length + 1}`);
-        values.push(value.$gte);
-      }
-      if (value.$lte) {
-        conditions.push(`created_at <= $${values.length + 1}`);
-        values.push(value.$lte);
-      }
-    } else if (Array.isArray(value)) {
-      // Array values (use IN operator)
-      conditions.push(`${key} = ANY($${values.length + 1})`);
-      values.push(value);
-    } else {
-      // Simple values
-      conditions.push(`${key} = $${values.length + 1}`);
-      values.push(value);
-    }
-  });
-
-  return {
-    where: conditions.join(' AND '),
-    values,
-  };
-}
-
-/**
  * Calculate offset for pagination
  */
 export function calculateOffset(page: number, limit: number): number {

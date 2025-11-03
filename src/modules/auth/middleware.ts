@@ -3,7 +3,6 @@ import { clerkClient } from '@clerk/clerk-sdk-node';
 import { AuthError, ForbiddenError } from '../../core/types/errors';
 import { logger } from '../../core/config/logger';
 import { User } from '../../database/mongodb/models/User';
-import { UserRepository } from '../../database/supabase/client';
 import { env, features } from '../../core/config/env';
 
 /**
@@ -88,47 +87,27 @@ export async function requireAuth(
     }
 
     // Load or create user in our database
-    let user;
-    
-    if (env.DATABASE_TYPE === 'mongodb') {
-      // MongoDB implementation
-      const UserModel = User as any;
-      user = await UserModel.findByClerkId(session.sub);
-      
-      if (!user) {
-        // Auto-create user if doesn't exist
-        user = await UserModel.create({
-          clerkId: session.sub,
-          email: clerkUser.emailAddresses[0]?.emailAddress,
-          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || undefined,
-          emailVerified: clerkUser.emailAddresses[0]?.verification?.status === 'verified',
-          profileImage: clerkUser.imageUrl,
-          lastLoginAt: new Date(),
-        });
-      } else {
-        // Update last login
-        await user.updateLastLogin();
-      }
+    const UserModel = User as any;
+    let user = await UserModel.findByClerkId(session.sub);
+
+    if (!user) {
+      // Auto-create user if doesn't exist
+      user = await UserModel.create({
+        clerkId: session.sub,
+        email: clerkUser.emailAddresses[0]?.emailAddress,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || undefined,
+        emailVerified: clerkUser.emailAddresses[0]?.verification?.status === 'verified',
+        profileImage: clerkUser.imageUrl,
+        lastLoginAt: new Date(),
+      });
     } else {
-      // Supabase implementation
-      try {
-        user = await UserRepository.findByClerkId(session.sub);
-      } catch {
-        // User doesn't exist, create it
-        user = await UserRepository.create({
-          clerk_id: session.sub,
-          email: clerkUser.emailAddresses[0]?.emailAddress.toLowerCase(),
-          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || null,
-          email_verified: clerkUser.emailAddresses[0]?.verification?.status === 'verified',
-          profile_image: clerkUser.imageUrl,
-          last_login_at: new Date().toISOString(),
-        });
-      }
+      // Update last login
+      await user.updateLastLogin();
     }
 
     // Attach user to request
     req.user = {
-      id: env.DATABASE_TYPE === 'mongodb' ? user._id.toString() : user.id,
+      id: user._id.toString(),
       email: user.email,
       role: user.role,
       clerkId: session.sub,
@@ -418,24 +397,15 @@ export async function refreshUserData(clerkId: string): Promise<void> {
       return;
     }
 
-    if (env.DATABASE_TYPE === 'mongodb') {
-      const UserModel = User as any;
-      const user = await UserModel.findByClerkId(clerkId);
-      
-      if (user) {
-        user.email = clerkUser.emailAddresses[0]?.emailAddress;
-        user.name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || undefined;
-        user.emailVerified = clerkUser.emailAddresses[0]?.verification?.status === 'verified';
-        user.profileImage = clerkUser.imageUrl;
-        await user.save();
-      }
-    } else {
-      await UserRepository.update(clerkId, {
-        email: clerkUser.emailAddresses[0]?.emailAddress.toLowerCase(),
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || null,
-        email_verified: clerkUser.emailAddresses[0]?.verification?.status === 'verified',
-        profile_image: clerkUser.imageUrl,
-      });
+    const UserModel = User as any;
+    const user = await UserModel.findByClerkId(clerkId);
+
+    if (user) {
+      user.email = clerkUser.emailAddresses[0]?.emailAddress;
+      user.name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || undefined;
+      user.emailVerified = clerkUser.emailAddresses[0]?.verification?.status === 'verified';
+      user.profileImage = clerkUser.imageUrl;
+      await user.save();
     }
     
     logger.info(`User data refreshed for ${clerkId}`);

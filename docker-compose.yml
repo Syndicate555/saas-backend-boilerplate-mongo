@@ -92,25 +92,9 @@ services:
     profiles:
       - dev
 
-  # Supabase (Alternative to MongoDB)
-  # Uncomment if using Supabase instead of MongoDB
-  # supabase-db:
-  #   image: supabase/postgres:14.1.0.89
-  #   container_name: saas-supabase-db
-  #   ports:
-  #     - "5432:5432"
-  #   environment:
-  #     - POSTGRES_PASSWORD=secure_password
-  #     - POSTGRES_DB=saas_boilerplate
-  #   volumes:
-  #     - supabase-data:/var/lib/postgresql/data
-  #   networks:
-  #     - saas-network
-
 volumes:
   mongo-data:
   redis-data:
-  # supabase-data:
 
 networks:
   saas-network:

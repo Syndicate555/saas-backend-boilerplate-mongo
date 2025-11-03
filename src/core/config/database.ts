@@ -1,13 +1,12 @@
-import { env } from './env';
+import mongoose from 'mongoose';
 import { logger } from './logger';
 import { connectMongoDB, disconnectMongoDB } from '../../database/mongodb/connection';
-import { getSupabaseClient, testSupabaseConnection } from '../../database/supabase/client';
 
 export interface DatabaseConnection {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   isConnected(): boolean;
-  getClient(): any;
+  getClient(): typeof mongoose;
 }
 
 class Database implements DatabaseConnection {
@@ -20,16 +19,10 @@ class Database implements DatabaseConnection {
     }
 
     try {
-      logger.info(`Connecting to ${env.DATABASE_TYPE} database...`);
-
-      if (env.DATABASE_TYPE === 'mongodb') {
-        await connectMongoDB();
-      } else if (env.DATABASE_TYPE === 'supabase') {
-        await testSupabaseConnection();
-      }
-
+      logger.info('Connecting to MongoDB database...');
+      await connectMongoDB();
       this.connected = true;
-      logger.info(`Successfully connected to ${env.DATABASE_TYPE} database`);
+      logger.info('Successfully connected to MongoDB database');
     } catch (error) {
       logger.error('Failed to connect to database', { error });
       throw error;
@@ -44,12 +37,7 @@ class Database implements DatabaseConnection {
 
     try {
       logger.info('Disconnecting from database...');
-
-      if (env.DATABASE_TYPE === 'mongodb') {
-        await disconnectMongoDB();
-      }
-      // Supabase client doesn't need explicit disconnection
-
+      await disconnectMongoDB();
       this.connected = false;
       logger.info('Successfully disconnected from database');
     } catch (error) {
@@ -62,17 +50,13 @@ class Database implements DatabaseConnection {
     return this.connected;
   }
 
-  getClient(): any {
+  getClient(): typeof mongoose {
     if (!this.connected) {
       throw new Error('Database not connected. Call connect() first.');
     }
 
-    if (env.DATABASE_TYPE === 'supabase') {
-      return getSupabaseClient();
-    }
-
-    // MongoDB returns mongoose connection through the connection module
-    return null;
+    // Return mongoose for MongoDB operations
+    return mongoose;
   }
 }
 

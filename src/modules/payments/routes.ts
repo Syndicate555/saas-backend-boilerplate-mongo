@@ -21,7 +21,7 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     const user = req.user!;
-    // For simplicity, we assume stripeCustomerId exists on user model (Mongo) or supabase record
+    // For simplicity, we assume stripeCustomerId exists on user model
     // In production, you'd load the full record
     const session = await createPortalSession((user as any).stripeCustomerId || '');
     res.json(success({ url: session.url }));

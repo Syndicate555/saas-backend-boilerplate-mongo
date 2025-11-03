@@ -164,8 +164,6 @@ export function subscriptionBasedLimiter(
   proLimit: number = 1000,
   enterpriseLimit: number = 10000
 ) {
-  const redisClient = getRedisClient();
-
   const baseOptions = {
     windowMs: 15 * 60 * 1000, // 15 minutes
     limit: (req: Request) => {

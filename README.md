@@ -1,13 +1,13 @@
 # SaaS Backend Boilerplate
 
-Production-ready, modular backend boilerplate for building SaaS MVPs quickly. Built with TypeScript, Express.js, MongoDB/Supabase, and optional Clerk authentication.
+Production-ready, modular backend boilerplate for building SaaS MVPs quickly. Built with TypeScript, Express.js, MongoDB, and optional Clerk authentication.
 
 ## ✨ Features
 
 ### Core Features (Always Included)
 - **Authentication**: Optional Clerk integration with JWT verification (mock auth in development)
 - **Validation**: Request validation with Zod
-- **Database**: Flexible choice between MongoDB or Supabase
+- **Database**: MongoDB with Mongoose ODM
 - **Rate Limiting**: Configurable rate limiters with optional Redis support
 - **Logging**: Structured logging with Winston
 - **Error Tracking**: Optional Sentry integration
@@ -141,7 +141,7 @@ This isn't just another boilerplate - it's been audited and improved for real-wo
 ### Real-World Patterns
 - **Modular Architecture**: Clean separation between core functionality, optional modules, and business features
 - **Feature-Based Structure**: Each feature is self-contained with its own model, schema, service, controller, and routes
-- **Flexible Database**: Easy switching between MongoDB and Supabase with a single environment variable
+- **MongoDB Database**: Mongoose ODM with connection pooling and retry logic
 - **Testing Ready**: Jest and Supertest configured with examples you can actually run
 
 ## Project Structure
@@ -151,7 +151,7 @@ src/
 ├── core/                       # Core functionality (always included)
 │   ├── config/                # Environment, database, logger, Redis setup
 │   │   ├── env.ts            # Environment variable validation with Zod
-│   │   ├── database.ts       # Database initialization (MongoDB/Supabase)
+│   │   ├── database.ts       # MongoDB database initialization
 │   │   ├── logger.ts         # Winston logger configuration
 │   │   └── redis.ts          # Optional Redis connection
 │   ├── middleware/           # Express middleware
@@ -171,13 +171,11 @@ src/
 │   └── server.ts            # Express app configuration
 │
 ├── database/                  # Database setup
-│   ├── mongodb/              # MongoDB implementation
-│   │   ├── connection.ts    # MongoDB connection with retry logic
-│   │   └── models/          # Mongoose models
-│   │       ├── User.ts      # User model with Clerk integration
-│   │       └── AuditLog.ts  # Audit logging model
-│   └── supabase/            # Supabase alternative
-│       └── client.ts        # Supabase client setup
+│   └── mongodb/              # MongoDB implementation
+│       ├── connection.ts    # MongoDB connection with retry logic
+│       └── models/          # Mongoose models
+│           ├── User.ts      # User model with Clerk integration
+│           └── AuditLog.ts  # Audit logging model
 │
 ├── modules/                   # Optional modules (enable as needed)
 │   ├── auth/                 # Authentication
@@ -259,7 +257,7 @@ cp -r src/features/example src/features/your-feature
 
 The example feature includes 5 files that work together:
 
-- **`your-feature.model.ts`**: Database model (Mongoose schema and Supabase types)
+- **`your-feature.model.ts`**: Database model (Mongoose schema)
 - **`your-feature.schema.ts`**: Zod validation schemas for requests
 - **`your-feature.service.ts`**: Business logic and database operations
 - **`your-feature.controller.ts`**: HTTP request handlers
@@ -290,7 +288,7 @@ The example feature demonstrates:
 - Input validation with Zod
 - Error handling
 - TypeScript types
-- Works with both MongoDB and Supabase
+- MongoDB with Mongoose ODM
 - Optional authentication (mock in dev, Clerk in production)
 
 ## Enabling Optional Modules
@@ -475,8 +473,8 @@ Before deploying to production, ensure you have:
 
 **Required:**
 - `NODE_ENV=production`
-- `DATABASE_TYPE=mongodb` (or `supabase`)
-- `MONGO_URI` (or Supabase credentials)
+- `DATABASE_TYPE=mongodb`
+- `MONGO_URI` (MongoDB connection string)
 - `CLERK_SECRET_KEY` (for production authentication)
 - `FRONTEND_URL` (your frontend domain)
 
@@ -562,7 +560,7 @@ This boilerplate includes multiple layers of security:
 - **Rate Limiting**: Prevents brute force and DoS attacks (Redis-backed in production)
 - **Input Validation**: All requests validated with Zod schemas
 - **Authentication**: JWT verification with Clerk (or mock auth in dev)
-- **SQL/NoSQL Injection Prevention**: Mongoose sanitization and Supabase parameterized queries
+- **NoSQL Injection Prevention**: Mongoose sanitization and query validation
 - **Environment Variable Validation**: Type-checked with Zod on startup
 - **Error Handling**: No sensitive data leaked in error responses
 - **Audit Logging**: Track important actions with timestamps and user IDs

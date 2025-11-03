@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import { env } from '../../core/config/env';
 import { logger } from '../../core/config/logger';
-import { User as MongooseUser } from '../../database/mongodb/models/User';
-import { getSupabaseClient } from '../../database/supabase/client';
+import { User } from '../../database/mongodb/models/User';
 
 // FIX: Updated Stripe API version to match installed SDK version
 const stripe = new Stripe(env.STRIPE_SECRET_KEY || '', { apiVersion: '2023-10-16' });
@@ -60,16 +59,8 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
 }
 
 async function updateSubscription(userId: string, subscription: string, customerId?: string) {
-  if (env.DATABASE_TYPE === 'mongodb') {
-    await MongooseUser.findByIdAndUpdate(userId, {
-      subscription,
-      stripeCustomerId: customerId,
-    });
-  } else {
-    const supabase = getSupabaseClient();
-    await supabase
-      .from('users')
-      .update({ subscription, stripe_customer_id: customerId })
-      .eq('id', userId);
-  }
+  await User.findByIdAndUpdate(userId, {
+    subscription,
+    stripeCustomerId: customerId,
+  });
 }

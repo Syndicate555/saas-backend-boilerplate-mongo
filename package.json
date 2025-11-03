@@ -28,7 +28,7 @@
     "typescript",
     "express",
     "mongodb",
-    "supabase",
+    "mongoose",
     "clerk"
   ],
   "author": "",
@@ -39,7 +39,6 @@
     "@clerk/clerk-sdk-node": "^5.0.0",
     "@sendgrid/mail": "^8.0.0",
     "@sentry/node": "^7.85.0",
-    "@supabase/supabase-js": "^2.38.5",
     "bullmq": "^5.1.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",

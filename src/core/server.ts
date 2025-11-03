@@ -1,11 +1,3 @@
-/**
- * Audit Status: Reviewed and fixed TypeScript errors
- * - Prefixed unused req parameters with underscore
- * - Fixed services type to use explicit boolean values
- * - Used bracket notation for process.env access
- * - Removed unreachable code after process.exit()
- */
-
 import express, { Express, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';

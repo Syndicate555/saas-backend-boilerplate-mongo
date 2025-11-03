@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import Redis from 'ioredis';
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
 import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
 import sgMail from '@sendgrid/mail';
 
@@ -114,49 +113,6 @@ async function checkDatabase(): Promise<void> {
       });
       printStatus(
         'Database (MongoDB)',
-        'healthy',
-        'Connected and healthy',
-        duration
-      );
-    } else if (databaseType === 'supabase') {
-      const supabaseUrl = process.env.SUPABASE_URL;
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-      if (!supabaseUrl || !supabaseKey) {
-        results.push({
-          name: 'Database (Supabase)',
-          required,
-          status: 'unhealthy',
-          message: 'SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not configured',
-          duration: Date.now() - startTime,
-        });
-        printStatus(
-          'Database (Supabase)',
-          'unhealthy',
-          'SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not configured',
-          Date.now() - startTime
-        );
-        return;
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { error } = await supabase.from('_dummy').select().limit(1);
-
-      // It's okay if the table doesn't exist, we just want to verify connection
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      const duration = Date.now() - startTime;
-      results.push({
-        name: 'Database (Supabase)',
-        required,
-        status: 'healthy',
-        message: 'Connected and healthy',
-        duration,
-      });
-      printStatus(
-        'Database (Supabase)',
         'healthy',
         'Connected and healthy',
         duration

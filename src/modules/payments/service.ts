@@ -1,21 +1,17 @@
 import Stripe from 'stripe';
 import { env } from '../../core/config/env';
-import { User as MongooseUser } from '../../database/mongodb/models/User';
-import { getSupabaseClient } from '../../database/supabase/client';
+import { User } from '../../database/mongodb/models/User';
 
 // FIX: Updated Stripe API version to match installed SDK version
 const stripe = new Stripe(env.STRIPE_SECRET_KEY || '', { apiVersion: '2023-10-16' });
 
 export async function createCheckoutSession(userId: string, priceId: string) {
-  let user: any;
-  if (env.DATABASE_TYPE === 'mongodb') {
-    user = await MongooseUser.findById(userId);
-  } else {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase.from('users').select('*').eq('id', userId).single();
-    if (error) throw error;
-    user = data;
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error('User not found');
   }
+
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
     mode: 'subscription',
